@@ -1,4 +1,5 @@
 #include "IncomeBaseline.h"
+#include <sstream>  // Make sure this header is included at the top of your file
 
 
 IncomeBaseline::IncomeBaseline(double savingsAmount, double checkingsAmount)
