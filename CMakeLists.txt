@@ -4,12 +4,12 @@ project(BudgetWebApp)
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(
-    include
-    external/crow/include
-    external/asio/asio/include
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/external/crow/include
+    ${CMAKE_SOURCE_DIR}/external/asio/asio/include
 )          # For your own headers
 
 add_executable(budget_app
-    src/main.cpp
-    src/IncomeBaseline.cpp
+    src/executable/main.cpp
+    src/moneyflow/IncomeBaseline.cpp
 )
