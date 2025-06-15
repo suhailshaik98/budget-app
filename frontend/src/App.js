@@ -5,12 +5,14 @@ import SetupLayout  from './components/UserAccountSetup/UserAccountSetup';
 import AccountSetupForm from "./components/UserAccountSetup/Step1/Step1";
 import AccountSetupForm2 from "./components/UserAccountSetup/Step2/Step2";
 import Step3 from './components/UserAccountSetup/Summary';
+import HomePageLayout from './components/Dashboard/Dashboard';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 function App() {
   return (
     <Router> {/* <-- must be at the root */}
       <Routes>
+        <Route path="/home" element={<HomePageLayout />} /> {/* Added HomePageLayout route */}
         {/* <Route path="/" element={<Home />} /> */}
 
         <Route path="setup" element={<SetupLayout />}>
