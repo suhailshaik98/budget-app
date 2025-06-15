@@ -6,47 +6,104 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import InputAdornment from '@mui/material/InputAdornment';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import Box from '@mui/material/Box';
+
 export default function Add_Expense({ open, onClose }) {
-    return (
-      <Dialog
-        open={open}
-        onClose={onClose}
-        slotProps={{
-          paper: {
-            component: 'form',
-            onSubmit: (event) => {
-              event.preventDefault();
-              const formData = new FormData(event.currentTarget);
-              const formJson = Object.fromEntries(formData.entries());
-              const email = formJson.email;
-              console.log(email);
-              onClose(); // close dialog after submission
-            },
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      slotProps={{
+        paper: {
+          component: 'form',
+          onSubmit: (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            const formJson = Object.fromEntries(formData.entries());
+            console.log('Submitted Expense:', formJson);  // ✅ Print all fields
+            onClose();
           },
-        }}
-      >
-        <DialogTitle>Subscribe</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            To subscribe to this website, please enter your email address here.
-          </DialogContentText>
+        },
+      }}
+    >
+      <DialogTitle>Add expense</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Please enter the expense details here
+        </DialogContentText>
+
+        <Box sx={{ '& > :not(style)': { m: 1 } }}>
           <TextField
             autoFocus
             required
             margin="dense"
-            id="name"
-            name="email"
-            label="Email Address"
-            type="email"
+            id="transaction_name"
+            name="transaction_name" // ✅ fixed
+            label="Name of Transaction"
+            type="text"
             fullWidth
             variant="standard"
           />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button type="submit">Subscribe</Button>
-        </DialogActions>
-      </Dialog>
-    );
-  }
-  
+
+          <TextField
+            required
+            margin="dense"
+            id="account_name"
+            name="account_name" // ✅ fixed
+            label="Account Name"
+            type="text"
+            fullWidth
+            variant="standard"
+          />
+
+          <TextField
+            required
+            margin="dense"
+            id="category"
+            name="category" // ✅ fixed
+            label="Category of Transaction"
+            type="text"
+            fullWidth
+            variant="standard"
+          />
+
+          <TextField
+            required
+            margin="dense"
+            id="date_of_transaction"
+            name="date_of_transaction" // ✅ fixed
+            label="Date of Transaction"
+            type="date"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            variant="outlined"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <ArrowForwardIosIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <TextField
+            required
+            margin="dense"
+            id="amount"
+            name="amount" // ✅ fixed
+            label="Amount"
+            type="number"
+            fullWidth
+            variant="standard"
+          />
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button type="submit">Save Transaction</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}

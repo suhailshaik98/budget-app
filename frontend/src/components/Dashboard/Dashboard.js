@@ -14,16 +14,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import Add_Expense from "./Expense/Expense_Module";
 import React, { useState } from "react";
 import ButtonAppBar from "../TopBar/ButtonAppBar";
-const Item = styled(Paper)(({ theme }) => ({
-    backgroundColor: '#fff',
-    ...theme.typography.body2,
-    padding: theme.spacing(1),
-    textAlign: 'center',
-    color: (theme.vars ?? theme).palette.text.secondary,
-    ...theme.applyStyles('dark', {
-      backgroundColor: '#1A2027',
-    }),
-  }));
+
 function HomePageLayout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,13 +41,21 @@ return (
   <Grid size={11} sx={{ padding: 2,display: 'flex', justifyContent: 'center'}}>
   <table>
                     <thead>
+                    <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th>
+                                <Button variant="contained" size="small" startIcon={<AddCircleIcon />} onClick={handleOpen}>Add</Button>
+                            </th>
+                        </tr>
                         <tr>
                             <th>Header 1</th>
                             <th>Header 2</th>
                             <th>Header 3</th>
-                            <th>
+                            {/* <th>
                                 <Button variant="contained" size="small" startIcon={<AddCircleIcon />} onClick={handleOpen}>Add</Button>
-                            </th>
+                            </th> */}
                         </tr>
                     </thead>
                     <tbody>
