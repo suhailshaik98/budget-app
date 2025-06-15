@@ -54,10 +54,18 @@ void DatabaseModule::connect(){
             "INSERT INTO users (username, password_hash, email) VALUES ($1,$2,$3);");
         connection -> prepare("insert account",
             "INSERT INTO accounts (user_id, account_name, account_type, balance) VALUES ($1,$2,$3,$4);");
+            connection -> prepare("insert category_returning_id",
+                "INSERT INTO categories (user_id, category, budget) VALUES ($1,$2,$3) RETURNING category_id;");
         connection-> prepare("insert transaction",
             "INSERT INTO transactions (user_id, account_id, amount, category, description, transaction_date) VALUES ($1,$2,$3,$4,$5,COALESCE($6, CURRENT_DATE));");
         connection->prepare("update_account_balance", "UPDATE accounts SET balance = $1 WHERE account_id = $2");
             std::cout << "Database connected and statments prepared."<<std::endl;
+        connection->prepare("insert_budget_item",
+            "INSERT INTO budget_items (category_id, item_name, amount) VALUES ($1, $2, $3);");
+        // Get the data from the database
+        // Get transaction for the user
+        // Get categories for the user
+        // Get accounts for the user
     }catch (const std::exception& e) {
         std::cerr << "Error connecting to database: " << e.what() << std::endl;
         throw; // Re-throw the exception for further handling
@@ -75,6 +83,33 @@ void DatabaseModule::insertUser(const std::string &username, const std::string& 
         std::cerr << "Error inserting user: " << e.what() << std::endl;
     }
 
+}
+
+void DatabaseModule::insertCategory(int userId, const std::string& categoryName, double budget, std::vector<std::pair<std::string, double>> budgetItems){
+    try{
+        pqxx::work txn(*connection);
+        std::cout << "in database module Inserting category: " << categoryName << " with budget: " << budget << std::endl;
+        for (const auto& item : budgetItems) {
+            std::cout << "in database module Inserting budget item: " << item.first << " with amount: " << item.second << std::endl;
+            // txn.exec_prepared("insert_budget_item", categoryId, item.first, item.second);
+        }  
+        pqxx::result r = txn.exec_prepared("insert category_returning_id", userId, categoryName, budget);
+        if (r.size() == 0) {
+            throw std::runtime_error("Failed to insert category.");
+        }
+        std::cout << "Category inserted successfully with name: " << categoryName << " and budget: " << budget << std::endl;
+        int categoryId = r[0][0].as<int>();
+        for (const auto& item : budgetItems) {
+            std::cout << "Inserting budget item: " << item.first << " with amount: " << item.second << std::endl;
+            txn.exec_prepared("insert_budget_item", categoryId, item.first, item.second);
+        }
+        // pqxx::result r = txn.exec_prepared("insert category_returning_id", userId, categoryName, budget);
+        // If budgetItems are provided, insert them into the budget_items table
+        txn.commit();
+        std::cout<<"category inserted successfully."<<std::endl;
+    }catch(const std::exception& e){
+        std::cerr << "Error inserting category: " << e.what() << std::endl;
+    }
 }
 
 void DatabaseModule::insertAccount(int userId, const std::string& accountName, const std::string& accountType, double balance){
