@@ -2,8 +2,8 @@ import logo from './logo.svg';
 import './App.css';
 import IncomeBaselineForm from './components/IncomeBaselineForm';
 import SetupLayout  from './components/UserAccountSetup/UserAccountSetup';
-import AccountSetupForm from "./components/UserAccountSetup/Step1";
-import AccountSetupForm2 from "./components/UserAccountSetup/Step2";
+import AccountSetupForm from "./components/UserAccountSetup/Step1/Step1";
+import AccountSetupForm2 from "./components/UserAccountSetup/Step2/Step2";
 import Step3 from './components/UserAccountSetup/Summary';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 

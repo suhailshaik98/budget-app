@@ -54,12 +54,45 @@ int main(){
 
         // Parse categories
         const auto& categoriesArray = body_json["categories"];
-        for (const auto& cat : categoriesArray) {
-            if (cat.size() != 2) continue;
-            std::string catName = cat["category_name"].s();
-            double catBudget = std::stod(cat["budget"].s());
-            setup.addCategory(catName, catBudget);
+        std::cout << "Categories Array Size: " << categoriesArray.size() << std::endl;
+        if (categoriesArray.size() == 0) {
+            std::cout << "No categories found." << std::endl;
+            return crow::response(400, "No categories found.");
         }
+        for (const auto& cat : categoriesArray) {
+            if (!cat.has("category_name") || !cat.has("budget") || !cat.has("budget_items")) {
+                std::cout << "Missing one of: category_name, budget, or budget_items in category JSON object." << std::endl;
+                return crow::response(400, "Missing one of: category_name, budget, or budget_items.");
+            }
+        
+            std::string catName = cat["category_name"].s();
+            if (catName.empty()) {
+                std::cout << "Category name is empty. Rejecting request." << std::endl;
+                return crow::response(400, "Category name cannot be empty.");
+            }
+            std::cout << "Category Name: " << catName << std::endl;
+        
+            double catBudget = std::stod(cat["budget"].s());
+            std::cout << "Category Budget: " << catBudget << std::endl;
+        
+            const auto& itemsArray = cat["budget_items"];
+            std::cout << "Budget Items Array Size: " << itemsArray.size() << std::endl;
+        
+            std::vector<BudgetItem> budgetItems;
+            for (const auto& item : itemsArray) {
+                if (!item.has("name") || !item.has("amount")) {
+                    std::cout << "Budget item missing 'item' or 'amount'. Rejecting request." << std::endl;
+                    return crow::response(400, "Each budget item must include 'item' and 'amount'.");
+                }
+        
+                std::string itemName = item["name"].s();
+                double amount = std::stod(item["amount"].s());
+                budgetItems.push_back({ itemName, amount });
+            }
+        
+            setup.addCategory(catName, catBudget, budgetItems);
+        }
+        
 
         // Build response with totals
         std::ostringstream os;
@@ -72,10 +105,10 @@ int main(){
             os << "- " << name << " (" << type << "): $" << balance << "<br>";
         }
 
-        os << "<br>Categories:<br>";
-        for (const auto& [cat, budget] : setup.getCategories()) {
-            os << "- " << cat << ": $" << budget << "<br>";
-        }
+        // os << "<br>Categories:<br>";
+        // for (const auto& [cat, budget] : setup.getCategories()) {
+        //     os << "- " << cat << ": $" << budget << "<br>";
+        // }
         setup.saveToDatabase(db);
         return crow::response(200, os.str());
     });

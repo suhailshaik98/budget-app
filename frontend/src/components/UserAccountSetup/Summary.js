@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Grid, Typography } from '@mui/material';
-import AccountSummary from './AccountSummary';
-import CategorySummary from './CategorySummary'; // Or CategoryBox if you want
+import AccountSummary from './Step1/AccountSummary';
+import CategorySummary from './Step2/CategorySummary'; // Or CategoryBox if you want
 console.log(window.location.hostname); // e.g., "example.com" or "192.168.1.10"
 var apiUrl = window.location.hostname; // Default to localhost for developmen
 const Step3 = () => {

@@ -20,28 +20,34 @@ double InitialAccountSetup::getTotalBalance() const {
     return total;
 }
 
-void InitialAccountSetup::addCategory(const std::string& categoryName, double budget) {
-    categories.emplace_back(categoryName, budget);
+void InitialAccountSetup::addCategory(const std::string& categoryName, double budget, const std::vector<BudgetItem>& budgetItems) {
+    categories.emplace_back(categoryName, budget, budgetItems);
 }
 
-const std::vector<std::pair<std::string, double>>& InitialAccountSetup::getCategories() const {
+const std::vector<Category>& InitialAccountSetup::getCategories() const {
     return categories;
 }
 
 double InitialAccountSetup::getTotalBudget() const {
     double total = 0.0;
     for (const auto& category : categories) {
-        total += category.second;
+        total += category.total_budget;
     }
     return total;
 }
 
 void InitialAccountSetup::saveToDatabase(DatabaseModule& db) {
     for (const auto& account : accounts) {
+        std::cout << "Inserting account: " << std::get<0>(account) << ", Type: " << std::get<1>(account) 
+                  << ", Balance: " << std::get<2>(account) << std::endl;
         db.insertAccount(userId, std::get<0>(account), std::get<1>(account), std::get<2>(account));
     }
 
     for (const auto& category : categories) {
-        db.insertCategory(userId, category.first, category.second);
+        std::cout << "Inserting category: " << category.name << " with budget: " << category.total_budget << std::endl;
+        for (const auto& item : category.budgetItems) {
+            std::cout << "  Budget Item: " << item.first << ", Amount: " << item.second << std::endl;
+        }
+        db.insertCategory(userId, category.name, category.total_budget, category.budgetItems);
     }
 }

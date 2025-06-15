@@ -1,37 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Box, Button, Typography, TextField } from '@mui/material';
 import CategorySummary from './CategorySummary';
+import CategoryBox from './CategoryBox';
 
-const CategoryBox = ({ category, onChange }) => {
-  const handleFieldChange = (field, value) => {
-    onChange(field, value);
-  };
-
-  return (
-    <Box sx={{ mb: 3, p: 2, border: '1px solid #ccc', borderRadius: 2, maxWidth: 300 }}>
-      <Typography variant="subtitle1">Add Category</Typography>
-
-      <TextField
-        label="Category Name"
-        value={category.category_name}
-        onChange={(e) => handleFieldChange('category_name', e.target.value)}
-        fullWidth
-        margin="normal"
-        required
-      />
-
-      <TextField
-        label="Budget Amount"
-        type="number"
-        value={category.budget}
-        onChange={(e) => handleFieldChange('budget', e.target.value)}
-        fullWidth
-        margin="normal"
-        required
-      />
-    </Box>
-  );
-};
 
 const Step2 = () => {
   const [currentCategory, setCurrentCategory] = useState({
@@ -54,11 +25,17 @@ const Step2 = () => {
   };
 
   const handleAddCategory = () => {
-    if (!currentCategory.category_name || !currentCategory.budget) {
+    if (!currentCategory.category_name || !currentCategory.budget_items) {
+
       alert('Please fill in both category name and budget.');
+      console.log(currentCategory)
       return;
     }
-
+    const totalBudget = currentCategory.budget_items.reduce((sum, item) => {
+      const amount = parseFloat(item.amount);
+      return sum + (isNaN(amount) ? 0 : amount);
+    }, 0);
+    currentCategory.budget = totalBudget.toString();
     const updated = [...savedCategories, currentCategory];
     setSavedCategories(updated);
     localStorage.setItem('categories', JSON.stringify(updated));

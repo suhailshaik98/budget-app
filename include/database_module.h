@@ -47,7 +47,8 @@ class DatabaseModule {
         void connect();
         void insertUser(const std::string& username, const std::string& passwordHash, const std::string& email);
         void insertAccount(int userId, const std::string& accountName, const std::string& accountType, double balance=0.0);
-        void insertCategory(int userId, const std::string& categoryName, double budget=0.0);
+        void insertCategory(int userId, const std::string& categoryName, double budget=0.0, 
+            std::vector<std::pair<std::string, double>> budgetItems = {});
         void updateAccountBalance(int accountId, double newBalance);
         void insertTransaction(int userId, int accountId, double amount, const std::string& category, 
             const std::string& description, const std::string& transactionDate = "");
