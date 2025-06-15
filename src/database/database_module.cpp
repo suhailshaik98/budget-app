@@ -54,10 +54,16 @@ void DatabaseModule::connect(){
             "INSERT INTO users (username, password_hash, email) VALUES ($1,$2,$3);");
         connection -> prepare("insert account",
             "INSERT INTO accounts (user_id, account_name, account_type, balance) VALUES ($1,$2,$3,$4);");
+            connection -> prepare("insert category",
+                "INSERT INTO categories (user_id, category, budget) VALUES ($1,$2,$3);");
         connection-> prepare("insert transaction",
             "INSERT INTO transactions (user_id, account_id, amount, category, description, transaction_date) VALUES ($1,$2,$3,$4,$5,COALESCE($6, CURRENT_DATE));");
         connection->prepare("update_account_balance", "UPDATE accounts SET balance = $1 WHERE account_id = $2");
             std::cout << "Database connected and statments prepared."<<std::endl;
+        // Get the data from the database
+        // Get transaction for the user
+        // Get categories for the user
+        // Get accounts for the user
     }catch (const std::exception& e) {
         std::cerr << "Error connecting to database: " << e.what() << std::endl;
         throw; // Re-throw the exception for further handling
@@ -75,6 +81,17 @@ void DatabaseModule::insertUser(const std::string &username, const std::string& 
         std::cerr << "Error inserting user: " << e.what() << std::endl;
     }
 
+}
+
+void DatabaseModule::insertCategory(int userId, const std::string& categoryName, double budget){
+    try{
+        pqxx::work txn(*connection);
+        txn.exec_prepared("insert category",userId, categoryName, budget);
+        txn.commit();
+        std::cout<<"category inserted successfully."<<std::endl;
+    }catch(const std::exception& e){
+        std::cerr << "Error inserting category: " << e.what() << std::endl;
+    }
 }
 
 void DatabaseModule::insertAccount(int userId, const std::string& accountName, const std::string& accountType, double balance){

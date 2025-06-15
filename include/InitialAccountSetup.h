@@ -48,15 +48,25 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <tuple>
+#include "database_module.h"  // Include DB module
 
 class InitialAccountSetup{
     public: 
-        InitialAccountSetup();
+        InitialAccountSetup(int userId);
         void addAccount(const std::string& accountName, const std::string& accountType, double balance);
         const std::vector<std::tuple<std::string, std::string, double>>& getAccounts() const;
         double getTotalBalance() const;
+        void addCategory(const std::string& categoryName, double budget);
+        const std::vector<std::pair<std::string, double>>& getCategories() const;
+        double getTotalBudget() const;
+        void saveToDatabase(DatabaseModule& db);
+
     private:
+        int userId;
         std::vector<std::tuple<std::string, std::string,double>> accounts;
+        std::vector<std::pair<std::string, double>> categories;
+
 
 };
 #endif // INITIAL_ACCOUNT_SETUP_H
