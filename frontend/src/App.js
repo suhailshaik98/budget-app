@@ -1,41 +1,26 @@
 import logo from './logo.svg';
 import './App.css';
 import IncomeBaselineForm from './components/IncomeBaselineForm';
+import SetupLayout  from './components/UserAccountSetup/UserAccountSetup';
+import AccountSetupForm from "./components/UserAccountSetup/Step1";
+import AccountSetupForm2 from "./components/UserAccountSetup/Step2";
+import Step3 from './components/UserAccountSetup/Summary';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
 function App() {
-  const handleFormSubmit = (data) => {
-    // alert (`Savings: $${data.savings} \nCheckings: $${data.checkings}`);
-    console.log('Form submitted with data:', data);
-  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Welcome to the Budget App!
-        </p>
-        <IncomeBaselineForm onSubmit={handleFormSubmit} />
-      </header>
-    </div>
+    <Router> {/* <-- must be at the root */}
+      <Routes>
+        {/* <Route path="/" element={<Home />} /> */}
+
+        <Route path="setup" element={<SetupLayout />}>
+          <Route index element={<Navigate to="step1" />} />
+          <Route path="step1" element={<AccountSetupForm />} />
+          <Route path="step2" element={<AccountSetupForm2 />} />
+          <Route path="step3" element={<Step3 />} />
+        </Route>
+      </Routes>
+    </Router>
   );
-  // return (
-
-  //   <div className="App">
-  //     <header className="App-header">
-  //       <img src={logo} className="App-logo" alt="logo" />
-  //       <p>
-  //         Edit <code>src/App.js</code> and save to reload.
-  //       </p>
-  //       <a
-  //         className="App-link"
-  //         href="https://reactjs.org"
-  //         target="_blank"
-  //         rel="noopener noreferrer"
-  //       >
-  //         Learn React
-  //       </a>
-  //     </header>
-  //   </div>
-  // );
 }
-
 export default App;
