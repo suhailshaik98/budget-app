@@ -62,10 +62,15 @@ void DatabaseModule::connect(){
             std::cout << "Database connected and statments prepared."<<std::endl;
         connection->prepare("insert_budget_item",
             "INSERT INTO budget_items (category_id, item_name, amount) VALUES ($1, $2, $3);");
+
         // Get the data from the database
         // Get transaction for the user
         // Get categories for the user
+        connection->prepare("get_only_categories",
+            "SELECT category FROM categories WHERE user_id = $1;");
         // Get accounts for the user
+        connection->prepare("get_account_info",
+            "SELECT account_id, account_name, balance, account_type FROM accounts WHERE user_id = $1;");
     }catch (const std::exception& e) {
         std::cerr << "Error connecting to database: " << e.what() << std::endl;
         throw; // Re-throw the exception for further handling
@@ -143,4 +148,43 @@ void DatabaseModule::insertTransaction(int userId, int accountId, double amount,
     }catch(const std::exception& e){
         std::cerr << "Error inserting transaction: " << e.what() << std::endl;
     }
+}
+
+std::vector<std::string> DatabaseModule::getOnlyCategories(int userId){
+    std::vector<std:: string> categoryNames;
+    try{
+        pqxx::work txn(*connection);
+        pqxx::result r = txn.exec_prepared("get_only_categories", userId);
+        for (const auto&row :r){
+            categoryNames.push_back(row[0].as<std::string>());
+        }
+        txn.commit();
+        std::cout << "Categories retrieved successfully." << std::endl;
+
+    }catch(const std::exception& e){
+        std::cerr << "Error retrieving categories: "<< e.what() << std::endl;
+    }
+    return categoryNames;
+}
+
+std::vector<Account> DatabaseModule::getAccounts(int userId){
+    std::vector<Account> accountNames;
+    try{
+        pqxx::work txn(*connection);
+        pqxx::result r = txn.exec_prepared("get_account_info", userId);
+        for (const auto& row : r){
+            Account account;
+            account.account_id = row[0].as<int>();
+            account.account_name = row[1].as<std::string>();
+            account.balance = row[2].as<double>();
+            account.account_type = row[3].as<std::string>();
+            accountNames.push_back(account);
+        }
+        txn.commit();
+        std::cout << "Accounts retrieved successfully." << std::endl;
+
+    }catch(const std::exception& e){
+        std::cerr << "Error retrieving accounts: "<< e.what() << std::endl;
+    }
+    return accountNames;
 }

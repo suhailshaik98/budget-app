@@ -2,6 +2,7 @@
 #include "InitialAccountSetup.h"
 #include "crow/middlewares/cors.h"
 #include "database_module.h"
+#include "Transaction_Manager.h"
 DatabaseModule db("host=localhost port=5432 dbname=budgetappdb user=budgetuser password=bUdgeTPa$$");
 
 int main(){
@@ -112,6 +113,51 @@ int main(){
         setup.saveToDatabase(db);
         return crow::response(200, os.str());
     });
+
+
+    CROW_ROUTE(app, "/add-transaction")
+    .methods(crow::HTTPMethod::POST)
+    ([](const crow::request& req) {
+        try{
+            std::cout << "Received request for add-transaction: " << req.body << std::endl;
+
+            auto body_json = crow::json::load(req.body);
+            if (!body_json) {
+                return crow::response(400, "Invalid JSON.");
+            }
+    
+            if (!body_json.has("user_id") || !body_json.has("account_name") || !body_json.has("amount") || !body_json.has("category") || !body_json.has("transaction_name")) {
+                return crow::response(400, "Missing one of: user_id, account_name, amount, category, or transaction_name.");
+            }
+    
+            int userId = body_json["user_id"].i();
+            std::string account_name = body_json["account_name"].s();
+            double amount = std::stod(body_json["amount"].s());
+            std::string category = body_json["category"].s();
+            std::string description = body_json["transaction_name"].s();
+            // std::string type_of_transaction = ""; // Placeholder for transaction type
+            Transaction_Manager transaction_manager(userId, account_name, amount, category, description);
+            transaction_manager.addTransaction(db);
+    
+    
+            // db.insertTransaction(userId, account_name, amount, category, description, "");
+    
+            return crow::response(200, "Transaction added successfully.");
+        }catch(const std::exception& e) {
+            std::cerr << "Error processing add-transaction request: " << e.what() << std::endl;
+            return crow::response(500, std::string(e.what()) + " Internal server error.");
+        }
+
+    });
+    CROW_ROUTE(app, "/accounts_info/<int>")
+    ([](int user_id){
+        // Access the database to fetch account information for the given user_id
+        // and format it as a JSON response.
+        std::ostringstream os;
+        os << "Account information for user ID: " << user_id;
+        return crow::response(os.str());
+    });
+
     // app.port(18080).multithreaded().run();
     app.bindaddr("0.0.0.0").port(18080).multithreaded().run();
 

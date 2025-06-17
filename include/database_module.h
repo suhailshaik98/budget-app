@@ -52,7 +52,9 @@ class DatabaseModule {
         void updateAccountBalance(int accountId, double newBalance);
         void insertTransaction(int userId, int accountId, double amount, const std::string& category, 
             const std::string& description, const std::string& transactionDate = "");
-        private:
+        std::vector<std::string> getOnlyCategories(int userId);
+        std::vector<Account> getAccounts(int userId);
+    private:
         std:: string connectionString;
         pqxx::connection* connection;
 };
