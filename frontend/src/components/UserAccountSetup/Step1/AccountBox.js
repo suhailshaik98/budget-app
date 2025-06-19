@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, TextField, Typography, IconButton } from '@mui/material';
+import { Box, TextField, Typography, IconButton,FormControl,MenuItem,Select,InputLabel } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 
 const AccountBox = ({ account, index, onChange, onRemove, canDelete, errors }) => {
@@ -21,8 +21,24 @@ const AccountBox = ({ account, index, onChange, onRemove, canDelete, errors }) =
         error={errors?.account_name}
         helperText={errors?.account_name ? 'Please enter account name' : ''}
       />
-
-      <TextField
+<FormControl fullWidth>
+  <InputLabel id="demo-simple-select-label">Account</InputLabel>
+  <Select
+    labelId="demo-simple-select-label"
+    id="demo-simple-select"
+    value={account.account_type}
+    label="Account"
+    required
+    error={errors?.account_type}
+    helperText={errors?.account_type ? 'Please enter account type' : ''}
+    onChange={(e) => handleFieldChange('account_type', e.target.value)}
+    >
+    <MenuItem value={"Savings"}>Savings</MenuItem>
+    <MenuItem value={"Checkings"}>Checkings</MenuItem>
+    <MenuItem value={"Credit Card"}>Credit Card</MenuItem>
+  </Select>
+</FormControl>
+      {/* <TextField
         label="Account Type"
         value={account.account_type}
         onChange={(e) => handleFieldChange('account_type', e.target.value)}
@@ -31,7 +47,7 @@ const AccountBox = ({ account, index, onChange, onRemove, canDelete, errors }) =
         required
         error={errors?.account_type}
         helperText={errors?.account_type ? 'Please enter account type' : ''}
-      />
+      /> */}
 
       <TextField
         label="Balance"

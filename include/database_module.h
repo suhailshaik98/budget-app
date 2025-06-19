@@ -37,12 +37,13 @@ int main() {
 #include <pqxx/pqxx>
 #include <string>
 #include<vector>
+#include "accounts.h"  // Include Account struct
 
 class DatabaseModule {
     public:
 
         DatabaseModule(const std::string& connStr);
-        ~DatabaseModule();
+        // ~DatabaseModule();
 
         void connect();
         void insertUser(const std::string& username, const std::string& passwordHash, const std::string& email);
@@ -52,9 +53,12 @@ class DatabaseModule {
         void updateAccountBalance(int accountId, double newBalance);
         void insertTransaction(int userId, int accountId, double amount, const std::string& category, 
             const std::string& description, const std::string& transactionDate = "");
-        private:
+        std::vector<std::string> getOnlyCategories(int userId);
+        std::vector<Account> getAccounts(int userId);
+        std::vector<std::tuple<std::string,std::string ,double, int>> getBudgetItemsforUser(int userId);
+    private:
         std:: string connectionString;
-        pqxx::connection* connection;
+        pqxx::connection createConnection() const;
 };
 #endif // DATABASE_MODULE_H
 
