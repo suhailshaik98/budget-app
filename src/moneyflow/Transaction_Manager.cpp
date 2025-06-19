@@ -1,14 +1,16 @@
 #include "Transaction_Manager.h"
 #include <iostream>
 #include "database_module.h"  // Include DB module
-Transaction_Manager::Transaction_Manager(int userId, const std::string& account_name, double amount, const std::string& category, const std::string& description) {
+Transaction_Manager::Transaction_Manager(int userId, const std::string& account_name, double amount, const std::string& category, const std::string& budget_item_name, const std::string& description, const std::string& transactionDate) {
     // Initialize the transaction with the provided parameters
     // This constructor can be used to set up a transaction object before adding it to the database
     this->userId = userId;
     this->account_name = account_name;
     this->amount = amount;
     this->category = category;
+    this->budget_item_name = budget_item_name;
     this->description = description;
+    this->transactionDate = transactionDate;  // Store the transaction date if provided
 }
 
 
@@ -47,11 +49,15 @@ void Transaction_Manager::addTransaction(DatabaseModule& db) {
             usr_account_type = it->account_type;  // <- Assigning account_type here
             std::cout << "Account '" << account_name << "' exists for user ID: " << userId
                       << " with account ID: " << usr_account_id << " and balance: " << usr_balance << std::endl;
-            usr_balance += amount; // Update balance with the transaction amount
+            if (usr_account_type == "Credit Card") {
+                usr_balance += amount; // Update balance with the transaction amount
+            } else {
+                usr_balance -= amount; // Update balance with the transaction amount
+            }
+            db.updateAccountBalance(usr_account_id, usr_balance);
+            db.insertTransaction(userId, usr_account_id, amount, budget_item_name, description, transactionDate);
         }
-        // db.updateAccountBalance(usr_account_id, usr_balance);
 
-        // db.insertTransaction(userId, usr_account_id, amount, category, description, "");
         // std::cout << "Transaction added successfully for user ID: " << userId << std::endl;
      
         

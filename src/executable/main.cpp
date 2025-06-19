@@ -3,6 +3,9 @@
 #include "crow/middlewares/cors.h"
 #include "database_module.h"
 #include "Transaction_Manager.h"
+#include "Accounts_Manager.h"
+#include "Category_Manager.h"
+// #include "../include/Accounts_Manager.h"
 DatabaseModule db("host=localhost port=5432 dbname=budgetappdb user=budgetuser password=bUdgeTPa$$");
 
 int main(){
@@ -125,18 +128,20 @@ int main(){
             if (!body_json) {
                 return crow::response(400, "Invalid JSON.");
             }
-    
-            if (!body_json.has("user_id") || !body_json.has("account_name") || !body_json.has("amount") || !body_json.has("category") || !body_json.has("transaction_name")) {
-                return crow::response(400, "Missing one of: user_id, account_name, amount, category, or transaction_name.");
+
+            if (!body_json.has("user_id") || !body_json.has("account_name") || !body_json.has("amount") || !body_json.has("budget_item_name") || !body_json.has("category_name") || !body_json.has("transaction_name") || !body_json.has("date_of_transaction")) {
+                return crow::response(400, "Missing one of: user_id, account_name, amount, budget_item_name, category_name, transaction_name, or date_of_transaction.");
             }
     
             int userId = body_json["user_id"].i();
             std::string account_name = body_json["account_name"].s();
             double amount = std::stod(body_json["amount"].s());
-            std::string category = body_json["category"].s();
+            std::string budget_item_name = body_json["budget_item_name"].s();
+            std::string category_name = body_json["category_name"].s();
             std::string description = body_json["transaction_name"].s();
+            std::string date_of_transaction = body_json["date_of_transaction"].s();
             // std::string type_of_transaction = ""; // Placeholder for transaction type
-            Transaction_Manager transaction_manager(userId, account_name, amount, category, description);
+            Transaction_Manager transaction_manager(userId, account_name, amount, category_name, budget_item_name, description,date_of_transaction);
             transaction_manager.addTransaction(db);
     
     
@@ -149,14 +154,53 @@ int main(){
         }
 
     });
-    CROW_ROUTE(app, "/accounts_info/<int>")
-    ([](int user_id){
-        // Access the database to fetch account information for the given user_id
-        // and format it as a JSON response.
-        std::ostringstream os;
-        os << "Account information for user ID: " << user_id;
-        return crow::response(os.str());
+    CROW_ROUTE(app, "/accounts_info/<string>")
+    ([](std::string user_id){
+        int userId = std::stoi(user_id);
+        Accounts_Manager accounts_manager(userId, db);
+        std::vector<Account> accounts = accounts_manager.getAccounts();
+    
+        crow::json::wvalue response_json;
+        std::vector<crow::json::wvalue> accounts_array;
+    
+        for (const auto& account : accounts) {
+            crow::json::wvalue account_json;
+            account_json["account_name"] = account.account_name;
+            account_json["account_type"] = account.account_type;
+            account_json["balance"] = account.balance;
+            account_json["account_id"] = account.account_id;
+            accounts_array.push_back(account_json);
+        }
+    
+        response_json["accounts"] = std::move(accounts_array);
+        std::cout << "Returning accounts info for user ID: " << userId << std::endl;
+    
+        return crow::response(200, response_json);  // ✅ valid JSON response
     });
+    CROW_ROUTE(app, "/categories_info/<string>")
+    ([](std::string user_id){
+        int userId = std::stoi(user_id);
+        Category_Manager category_manager(userId, "", 0.0, {});
+        std::vector<std::tuple<std::string,std::string ,double, int>> budget_items = category_manager.getBudgetItemsforUser(db, userId);
+    
+        crow::json::wvalue response_json;
+        std::vector<crow::json::wvalue> budget_items_array;
+
+        for (const auto& items : budget_items) {
+            crow::json::wvalue budget_json;
+            budget_json["budget_item_name"] = std::get<0>(items);
+            budget_json["category"] = std::get<1>(items);
+            budget_json["allocated_budget"] = std::get<2>(items);
+            budget_json["budget_item_id"] = std::get<3>(items);
+            budget_items_array.push_back(budget_json);
+        }
+
+        response_json["budget_items"] = std::move(budget_items_array);
+        std::cout << "Returning budget items info for user ID: " << userId << std::endl;
+
+        return crow::response(200, response_json);  // ✅ valid JSON response
+    });
+
 
     // app.port(18080).multithreaded().run();
     app.bindaddr("0.0.0.0").port(18080).multithreaded().run();

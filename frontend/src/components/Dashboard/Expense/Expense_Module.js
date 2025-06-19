@@ -5,22 +5,38 @@ import {
 } from "@mui/material";
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
-const apiUrl = "localhost"; // Or set this via props/environment
-
+console.log(window.location.hostname); // e.g., "example.com" or "192.168.1.10"
+var apiUrl = window.location.hostname; // Default to localhost for developmen
 export default function Add_Expense({ open, onClose }) {
   const [accounts, setAccounts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedAccount, setSelectedAccount] = useState('');
 
   // Fetch accounts on dialog open
   useEffect(() => {
     if (open) {
-      fetch(`http://${apiUrl}:18080/accounts?user_id=1`)
+      fetch(`http://${apiUrl}:18080/accounts_info/1`)
         .then(res => res.json())
-        .then(data => setAccounts(data))
+        .then(data => {
+          console.log("Fetched accounts:", data);
+          setAccounts(data.accounts);
+        })
         .catch(err => console.error("Failed to fetch accounts:", err));
     }
   }, [open]);
 
+    useEffect(() => {
+    if (open) {
+      fetch(`http://${apiUrl}:18080/categories_info/1`)
+        .then(res => res.json())
+        .then(data => {
+          console.log("Fetched categories:", data);
+          setCategories(data.budget_items);
+        })
+        .catch(err => console.error("Failed to fetch categories:", err));
+    }
+  }, [open]);
   return (
     <Dialog
       open={open}
@@ -33,6 +49,11 @@ export default function Add_Expense({ open, onClose }) {
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries(formData.entries());
             formJson.user_id = 1;
+            formJson.account_name = selectedAccount.split(" - ")[0];
+            formJson.account_type = selectedAccount.split(" - ")[1];
+            formJson.category_name = selectedCategory.split(" - ")[1];
+            formJson.budget_item_name = selectedCategory.split(" - ")[0];
+            console.log('Form Data:', formJson);
 
             try {
               const response = await fetch(`http://${apiUrl}:18080/add-transaction`, {
@@ -89,23 +110,29 @@ export default function Add_Expense({ open, onClose }) {
               onChange={(e) => setSelectedAccount(e.target.value)}
             >
               {accounts.map((acc) => (
-                <MenuItem key={acc.account_id} value={acc.account_name}>
-                  {acc.account_name}
+                <MenuItem key={acc.account_id} value={acc.account_name  + " - " + acc.account_type}>
+                  {acc.account_name+ " - " + acc.account_type}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          <TextField
-            required
-            margin="dense"
-            id="category"
-            name="category"
-            label="Category of Transaction"
-            type="text"
-            fullWidth
-            variant="standard"
-          />
+          <FormControl fullWidth margin="dense" variant="standard" required>
+            <InputLabel id="category-label">Category</InputLabel>
+            <Select
+              labelId="category-label"
+              id="category_name"
+              name="category_name"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              {categories.map((cat) => (
+                <MenuItem key={cat.budget_items_id} value={cat.budget_item_name+ " - " + cat.category}>
+                  {cat.budget_item_name} - {cat.category}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
           <TextField
             required
@@ -135,6 +162,10 @@ export default function Add_Expense({ open, onClose }) {
             type="number"
             fullWidth
             variant="standard"
+            inputProps={{
+              step: "0.01",  // ✅ Allows decimal input like 10.99
+              min: "0"       // Optional: Prevent negative amounts if you want
+            }}
           />
         </Box>
       </DialogContent>
