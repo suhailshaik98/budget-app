@@ -69,10 +69,13 @@ void Transaction_Manager::addTransaction(DatabaseModule& db) {
     }
 }
 
-
-
-
-
+const std::vector<Transaction>& getTimedTransactions(int userId, const std::string& start_date, const std::string& end_date){
+    try{
+        
+    }catch(const std::exception&e){
+        std::cerr << "Error query on timed transactions failed"<< e.what() << std::endl;
+    }
+}
 
 
 

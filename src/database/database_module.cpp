@@ -219,3 +219,33 @@ std::vector<std::tuple<std::string,std::string ,double, int>> DatabaseModule::ge
     }
     return budgetItems;
 }
+const std::vector<Transaction> &DatabaseModule::getTimedTransactions(int userId, std::string &start_date, std::string &end_date){
+    std::vector<Transaction> transactions_result; 
+    try{
+        auto conn= createConnection();
+        pqxx::work txn(conn);
+        conn.prepare("get_timed_transactions_for_user",
+            "SELECT * FROM transactions"
+            "WHERE user_id $1"
+            "AND transaction_date between $2 and $3"
+        );
+        pqxx::result r = txn.exec_prepared("get_timed_transactions_for_user",userId,start_date,end_date);
+        for (const auto&row: r){
+            Transaction transaction;
+            transaction.transaction_id = row[0].as<int>();
+            transaction.account_id = row[4].as<int>();
+            transaction.amount = row[2].as<double>();
+            transaction.description = row[3].as<std::string>();
+            transaction.date = row[4].as<std::string>();
+            transaction.budget_item = row[5].as<std::string>();
+            transactions_result.push_back(transaction);
+        }   
+        txn.commit();
+
+    }catch(const std::exception& e){
+        std::cerr << "Error retrieving timed transactions for the user "<< e.what() << std::endl;
+    }
+    return transactions_result;
+
+
+}
