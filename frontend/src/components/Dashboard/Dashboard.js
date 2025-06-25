@@ -19,7 +19,7 @@ function HomePageLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   console.log(window.location.hostname); // e.g., "example.com" or "192.168.1.10"
-  var apiUrl = window.location.hostname; // Default to localhost for developmen
+  var apiUrl = window.location.hostname; // Default to localhost for development from arshi
   const [openExpenseDialog, setOpenExpenseDialog] = useState(false);
 
   const handleOpen = () => setOpenExpenseDialog(true);
