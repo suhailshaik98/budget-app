@@ -25,4 +25,5 @@ struct Transaction {
     std::string budget_item;
     std::string description;
     std::string account;
+    std::string account_type;
 };

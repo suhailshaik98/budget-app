@@ -12,10 +12,11 @@
 class Transaction_Manager{
     public:
         Transaction_Manager(int userId, const std::string& account_name, double amount, const std::string& category, const std::string& budget_item_name, const std::string& description, const std::string& transactionDate);
+        Transaction_Manager(int userId);
         void addTransaction(DatabaseModule& db);
         void updateTransaction(int userId, const std::string& account_name, double amount, const std::string& category, const std::string& description);
         void deleteTransaction(int transactionId);
-        const std::vector<Transaction>& getTimedTransactions(int userId, const std::string& start_date, const std::string& end_date);
+        std::vector<Transaction> getTimedTransactions(const std::string& start_date, const std::string& end_date, DatabaseModule& db);
         const std::vector<Transaction>& getAllTransactions(int userId);
     private:
         int userId;

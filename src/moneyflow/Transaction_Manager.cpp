@@ -1,16 +1,32 @@
 #include "Transaction_Manager.h"
 #include <iostream>
 #include "database_module.h"  // Include DB module
-Transaction_Manager::Transaction_Manager(int userId, const std::string& account_name, double amount, const std::string& category, const std::string& budget_item_name, const std::string& description, const std::string& transactionDate) {
+Transaction_Manager::Transaction_Manager(int userId,
+    const std::string& account_name,
+    double amount,
+    const std::string& category,
+    const std::string& budget_item_name,
+    const std::string& description,
+    const std::string& transactionDate)
+{
+this->userId = userId;
+this->account_name = account_name;
+this->amount = amount;
+this->category = category;
+this->budget_item_name = budget_item_name;
+this->description = description;
+this->transactionDate = transactionDate;
+}
+Transaction_Manager::Transaction_Manager(int userId) {
     // Initialize the transaction with the provided parameters
     // This constructor can be used to set up a transaction object before adding it to the database
     this->userId = userId;
-    this->account_name = account_name;
-    this->amount = amount;
-    this->category = category;
-    this->budget_item_name = budget_item_name;
-    this->description = description;
-    this->transactionDate = transactionDate;  // Store the transaction date if provided
+    this->account_name = "";
+    this->amount = 0.0;
+    this->category = "";
+    this->budget_item_name = "";
+    this->description = "";
+    this->transactionDate = "";  // Store the transaction date if provided
 }
 
 
@@ -69,13 +85,21 @@ void Transaction_Manager::addTransaction(DatabaseModule& db) {
     }
 }
 
-const std::vector<Transaction>& getTimedTransactions(int userId, const std::string& start_date, const std::string& end_date){
-    try{
-        
-    }catch(const std::exception&e){
-        std::cerr << "Error query on timed transactions failed"<< e.what() << std::endl;
+std::vector<Transaction> Transaction_Manager::getTimedTransactions(
+    const std::string& start_date,
+    const std::string& end_date,
+    DatabaseModule& db) 
+{
+    try {
+        std::cout << "at the class transaction manager the Timed Transactions" << std::endl;
+
+        std::vector<Transaction> result = db.getTimedTransactions(userId, start_date, end_date);
+        std::cout << "returning from class transaction manager the Timed Transactions" << std::endl;
+        return result;  // ✅ returning by value (safe)
+    } catch (const std::exception& e) {
+        std::cerr << "Error query on timed transactions failed: " << e.what() << std::endl;
+        return {};  // return empty vector
     }
 }
-
 
 

@@ -219,32 +219,80 @@ std::vector<std::tuple<std::string,std::string ,double, int>> DatabaseModule::ge
     }
     return budgetItems;
 }
-const std::vector<Transaction> &DatabaseModule::getTimedTransactions(int userId, std::string &start_date, std::string &end_date){
+std::vector<Transaction> DatabaseModule::getTimedTransactions(int userId,  const std::string& start_date, const std::string& end_date){
     std::vector<Transaction> transactions_result; 
     try{
+        std::cout << "Getting TImed Transactions" << std::endl;  // This flushes automatically
         auto conn= createConnection();
         pqxx::work txn(conn);
         conn.prepare("get_timed_transactions_for_user",
-            "SELECT * FROM transactions"
-            "WHERE user_id $1"
-            "AND transaction_date between $2 and $3"
+            "SELECT "
+            "t.transaction_id, "
+            "t.user_id, "
+            "t.amount, "
+            "t.description, "
+            "t.transaction_date, "
+            "t.account_id, "
+            "t.budget_item, "
+            "a.account_name, "
+            "a.account_type "
+            "FROM transactions t "
+            "LEFT JOIN accounts a ON t.account_id = a.account_id "
+            "WHERE t.user_id = $1 "
+            "AND t.transaction_date BETWEEN $2 AND $3"
         );
+        std::cout << "Prepared TImed Transactions" << std::endl;  // This flushes automatically
+
         pqxx::result r = txn.exec_prepared("get_timed_transactions_for_user",userId,start_date,end_date);
-        for (const auto&row: r){
+        std::cout << "Executed TImed Transactions" << std::endl;  // This flushes automatically
+        for (const auto& row : r) {
             Transaction transaction;
+        
             transaction.transaction_id = row[0].as<int>();
-            transaction.account_id = row[4].as<int>();
+            std::cout << "transaction_id: " << transaction.transaction_id << std::endl;
+        
+            // user_id is row[1]
+            int user_id = row[1].as<int>();
+            std::cout << "user_id: " << user_id << std::endl;
+        
             transaction.amount = row[2].as<double>();
+            std::cout << "amount: " << transaction.amount << std::endl;
+        
             transaction.description = row[3].as<std::string>();
+            std::cout << "description: " << transaction.description << std::endl;
+        
             transaction.date = row[4].as<std::string>();
-            transaction.budget_item = row[5].as<std::string>();
+            std::cout << "date: " << transaction.date << std::endl;
+        
+            transaction.account_id = row[5].as<int>();
+            std::cout << "account_id: " << transaction.account_id << std::endl;
+        
+            transaction.budget_item = row[6].as<std::string>();
+            std::cout << "budget_item: " << transaction.budget_item << std::endl;
+        
+            if (row[7].is_null()) {
+                transaction.account = "";
+                std::cout << "account_name: NULL" << std::endl;
+            } else {
+                transaction.account = row[7].as<std::string>();
+                std::cout << "account_name: " << transaction.account << std::endl;
+                transaction.account_type = row[8].as<std::string>();
+                std::cout << "account_name: " << transaction.account_type << std::endl;
+            }
+        
             transactions_result.push_back(transaction);
-        }   
+        }
+        std::cout << "outside loop of TImed Transactions" << std::endl;  // This flushes automatically
+
         txn.commit();
+        std::cout << "Comitted TImed Transactions" << std::endl;  // This flushes automatically
+
 
     }catch(const std::exception& e){
         std::cerr << "Error retrieving timed transactions for the user "<< e.what() << std::endl;
     }
+    std::cout << "returning TImed Transactions" << std::endl;  // This flushes automatically
+
     return transactions_result;
 
 
