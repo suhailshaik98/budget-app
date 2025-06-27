@@ -10,7 +10,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import Box from '@mui/material/Box';
 
-export default function Add_Expense({ open, onClose }) {
+export default function Add_Expense({ open, onClose, addexpense }) {
   return (
     <Dialog
       open={open}
@@ -22,6 +22,7 @@ export default function Add_Expense({ open, onClose }) {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries(formData.entries());
+            addexpense(formJson)
             console.log('Submitted Expense:', formJson);  // ✅ Print all fields
             onClose();
           },
