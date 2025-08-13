@@ -56,6 +56,9 @@ class DatabaseModule {
         std::vector<std::string> getOnlyCategories(int userId);
         std::vector<Account> getAccounts(int userId);
         std::vector<std::tuple<std::string,std::string ,double, int>> getBudgetItemsforUser(int userId);
+        std::vector<Transaction> getTimedTransactions(int userId,  const std::string& start_date, const std::string& end_date);
+        const std::vector<Transaction>& getAllTransactions(int userId, std::string& start_date, std::string& end_date);
+
     private:
         std:: string connectionString;
         pqxx::connection createConnection() const;

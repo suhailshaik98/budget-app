@@ -5,6 +5,9 @@
 #include "Transaction_Manager.h"
 #include "Accounts_Manager.h"
 #include "Category_Manager.h"
+#include "userinformation.h"
+#include "json_helper.h"
+
 // #include "../include/Accounts_Manager.h"
 DatabaseModule db("host=localhost port=5432 dbname=budgetappdb user=budgetuser password=bUdgeTPa$$");
 
@@ -199,6 +202,37 @@ int main(){
         std::cout << "Returning budget items info for user ID: " << userId << std::endl;
 
         return crow::response(200, response_json);  // ✅ valid JSON response
+    });
+
+    CROW_ROUTE(app,"/get_transactions_timed/<string>/<string>")
+    ([](std::string user_id, std::string start_to_end_time){
+        // Split the string by hyphen to get start and end date
+        size_t hyphen_pos = start_to_end_time.find('_');
+        if (hyphen_pos == std::string::npos) {
+            return crow::response(400, "Invalid format. Expected 'startdate-enddate'.");
+        }
+        std::string start_date = start_to_end_time.substr(0, hyphen_pos);
+        std::string end_date = start_to_end_time.substr(hyphen_pos + 1);
+        // Example: return the parsed dates and user_id as JSON
+        crow::json::wvalue result;
+        result["user_id"] = user_id;
+        result["start_date"] = start_date;
+        result["end_date"] = end_date;
+        int usr_id = std::stoi(user_id); 
+        UserInformation userinformation(usr_id);
+        std::vector<Transaction> transactions_data = userinformation.getTimedTransactions(start_date,end_date,db);
+        std::cout << "In main successuflly result" << std::endl;  // This flushes automatically
+
+        crow::json::wvalue json_array;
+        int i=0;
+        for (const auto& tx:transactions_data){
+            json_array[i++] = transactionToJson(tx);
+        }
+
+        std::cout << "Added data" << std::endl;  // This flushes automatically
+
+        result["data"]=std::move(json_array);
+        return crow::response(200, result);
     });
 
 
