@@ -2,6 +2,13 @@
 #include "InitialAccountSetup.h"
 #include "crow/middlewares/cors.h"
 #include "database_module.h"
+#include "Transaction_Manager.h"
+#include "Accounts_Manager.h"
+#include "Category_Manager.h"
+#include "userinformation.h"
+#include "json_helper.h"
+
+// #include "../include/Accounts_Manager.h"
 DatabaseModule db("host=localhost port=5432 dbname=budgetappdb user=budgetuser password=bUdgeTPa$$");
 
 int main(){
@@ -112,6 +119,123 @@ int main(){
         setup.saveToDatabase(db);
         return crow::response(200, os.str());
     });
+
+
+    CROW_ROUTE(app, "/add-transaction")
+    .methods(crow::HTTPMethod::POST)
+    ([](const crow::request& req) {
+        try{
+            std::cout << "Received request for add-transaction: " << req.body << std::endl;
+
+            auto body_json = crow::json::load(req.body);
+            if (!body_json) {
+                return crow::response(400, "Invalid JSON.");
+            }
+
+            if (!body_json.has("user_id") || !body_json.has("account_name") || !body_json.has("amount") || !body_json.has("budget_item_name") || !body_json.has("category_name") || !body_json.has("transaction_name") || !body_json.has("date_of_transaction")) {
+                return crow::response(400, "Missing one of: user_id, account_name, amount, budget_item_name, category_name, transaction_name, or date_of_transaction.");
+            }
+    
+            int userId = body_json["user_id"].i();
+            std::string account_name = body_json["account_name"].s();
+            double amount = std::stod(body_json["amount"].s());
+            std::string budget_item_name = body_json["budget_item_name"].s();
+            std::string category_name = body_json["category_name"].s();
+            std::string description = body_json["transaction_name"].s();
+            std::string date_of_transaction = body_json["date_of_transaction"].s();
+            // std::string type_of_transaction = ""; // Placeholder for transaction type
+            Transaction_Manager transaction_manager(userId, account_name, amount, category_name, budget_item_name, description,date_of_transaction);
+            transaction_manager.addTransaction(db);
+    
+    
+            // db.insertTransaction(userId, account_name, amount, category, description, "");
+    
+            return crow::response(200, "Transaction added successfully.");
+        }catch(const std::exception& e) {
+            std::cerr << "Error processing add-transaction request: " << e.what() << std::endl;
+            return crow::response(500, std::string(e.what()) + " Internal server error.");
+        }
+
+    });
+    CROW_ROUTE(app, "/accounts_info/<string>")
+    ([](std::string user_id){
+        int userId = std::stoi(user_id);
+        Accounts_Manager accounts_manager(userId, db);
+        std::vector<Account> accounts = accounts_manager.getAccounts();
+    
+        crow::json::wvalue response_json;
+        std::vector<crow::json::wvalue> accounts_array;
+    
+        for (const auto& account : accounts) {
+            crow::json::wvalue account_json;
+            account_json["account_name"] = account.account_name;
+            account_json["account_type"] = account.account_type;
+            account_json["balance"] = account.balance;
+            account_json["account_id"] = account.account_id;
+            accounts_array.push_back(account_json);
+        }
+    
+        response_json["accounts"] = std::move(accounts_array);
+        std::cout << "Returning accounts info for user ID: " << userId << std::endl;
+    
+        return crow::response(200, response_json);  // ✅ valid JSON response
+    });
+    CROW_ROUTE(app, "/categories_info/<string>")
+    ([](std::string user_id){
+        int userId = std::stoi(user_id);
+        Category_Manager category_manager(userId, "", 0.0, {});
+        std::vector<std::tuple<std::string,std::string ,double, int>> budget_items = category_manager.getBudgetItemsforUser(db, userId);
+    
+        crow::json::wvalue response_json;
+        std::vector<crow::json::wvalue> budget_items_array;
+
+        for (const auto& items : budget_items) {
+            crow::json::wvalue budget_json;
+            budget_json["budget_item_name"] = std::get<0>(items);
+            budget_json["category"] = std::get<1>(items);
+            budget_json["allocated_budget"] = std::get<2>(items);
+            budget_json["budget_item_id"] = std::get<3>(items);
+            budget_items_array.push_back(budget_json);
+        }
+
+        response_json["budget_items"] = std::move(budget_items_array);
+        std::cout << "Returning budget items info for user ID: " << userId << std::endl;
+
+        return crow::response(200, response_json);  // ✅ valid JSON response
+    });
+
+    CROW_ROUTE(app,"/get_transactions_timed/<string>/<string>")
+    ([](std::string user_id, std::string start_to_end_time){
+        // Split the string by hyphen to get start and end date
+        size_t hyphen_pos = start_to_end_time.find('_');
+        if (hyphen_pos == std::string::npos) {
+            return crow::response(400, "Invalid format. Expected 'startdate-enddate'.");
+        }
+        std::string start_date = start_to_end_time.substr(0, hyphen_pos);
+        std::string end_date = start_to_end_time.substr(hyphen_pos + 1);
+        // Example: return the parsed dates and user_id as JSON
+        crow::json::wvalue result;
+        result["user_id"] = user_id;
+        result["start_date"] = start_date;
+        result["end_date"] = end_date;
+        int usr_id = std::stoi(user_id); 
+        UserInformation userinformation(usr_id);
+        std::vector<Transaction> transactions_data = userinformation.getTimedTransactions(start_date,end_date,db);
+        std::cout << "In main successuflly result" << std::endl;  // This flushes automatically
+
+        crow::json::wvalue json_array;
+        int i=0;
+        for (const auto& tx:transactions_data){
+            json_array[i++] = transactionToJson(tx);
+        }
+
+        std::cout << "Added data" << std::endl;  // This flushes automatically
+
+        result["data"]=std::move(json_array);
+        return crow::response(200, result);
+    });
+
+
     // app.port(18080).multithreaded().run();
     app.bindaddr("0.0.0.0").port(18080).multithreaded().run();
 

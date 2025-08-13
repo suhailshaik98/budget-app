@@ -19,6 +19,11 @@ add_executable(budget_app
     src/executable/main.cpp
     src/database/database_module.cpp      # Add the database_module.cpp here
     src/moneyflow/InitialAccountSetup.cpp
+    src/moneyflow/Transaction_Manager.cpp
+    src/accounts/Accounts_Manager.cpp
+    src/categories/Category_Manager.cpp
+    src/user/userinformation.cpp
+    src/json/json_helper.cpp
 )
 
 target_link_libraries(budget_app PRIVATE ${PQXX_LIBRARIES})
