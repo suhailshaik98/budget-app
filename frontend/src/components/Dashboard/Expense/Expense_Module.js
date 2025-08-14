@@ -7,7 +7,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 console.log(window.location.hostname); // e.g., "example.com" or "192.168.1.10"
 var apiUrl = window.location.hostname; // Default to localhost for developmen
-export default function Add_Expense({ open, onClose }) {
+export default function Add_Expense({ open, onClose, addexpense }) {
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -48,11 +48,12 @@ export default function Add_Expense({ open, onClose }) {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries(formData.entries());
-            formJson.user_id = 1;
+  formJson.user_id = 1;
             formJson.account_name = selectedAccount.split(" - ")[0];
             formJson.account_type = selectedAccount.split(" - ")[1];
             formJson.category_name = selectedCategory.split(" - ")[1];
             formJson.budget_item_name = selectedCategory.split(" - ")[0];
+            addexpense (formJson); // Call the parent function to add the expense
             console.log('Form Data:', formJson);
 
             try {
