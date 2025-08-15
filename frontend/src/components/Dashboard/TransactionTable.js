@@ -29,10 +29,10 @@ const TransactionTable = ({ transactions = [] }) => {
           ) : (
             transactions.map((txn, index) => (
               <TableRow key={index}>
-                <TableCell>{txn.transaction_name}</TableCell>
+                <TableCell>{txn.description}</TableCell>
                 <TableCell>{txn.account_name}</TableCell>
-                <TableCell>{txn.category_name}</TableCell>
-                <TableCell>{txn.date_of_transaction}</TableCell>
+                <TableCell>{txn.budget_item_name}</TableCell>
+                <TableCell>{txn.transaction_date}</TableCell>
                 {/* <TableCell>{txn.budgetItem}</TableCell> */}
                 <TableCell>{txn.amount}</TableCell>
               </TableRow>

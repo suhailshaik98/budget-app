@@ -34,10 +34,38 @@ function HomePageLayout() {
     { transaction_name: 'Netflix', account_name: 'Checkings', category_name: 'Entertainment', date_of_transaction: '2025-06-20', budgetItem: 'Personal Use', amount: '25' },
   ];
 
-  useEffect(() => {
-    for (var i = 0; i < exampleTransactions.length; i++) {
-      handleadddict(exampleTransactions[i]);
+  const getTransactionsPast30Days = async () => {
+    try {
+      let todays_date = new Date();
+      let past_date = new Date(todays_date);
+      const todays_date_format = todays_date.toISOString().split('T')[0]
+      
+      past_date.setDate(past_date.getDate() - 30);
+      const past_date_format = past_date.toISOString().split('T')[0]
+
+      console.log("Todays date: ", todays_date_format);
+      console.log("Past date: ", past_date_format);
+
+      const response = await fetch(`http://${apiUrl}:18080/get_transactions_timed/1/${past_date_format}_${todays_date_format}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      console.log("Fetched transactions:", data);
+      if (data.data != null){
+      setTransactions(data.data);
+
+      }
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
     }
+  }
+
+  useEffect(() => {
+    getTransactionsPast30Days();
+    // for (var i = 0; i < exampleTransactions.length; i++) {
+    //   handleadddict(exampleTransactions[i]);
+    // }
   }, []);
 
   return (
