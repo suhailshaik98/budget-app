@@ -235,6 +235,9 @@ int main(){
         return crow::response(200, result);
     });
 
+    //Verify if the user has entered the minimal data required
+    // Edit the accounts and categories and transactions
+    // Just use the earlier api to get the last 30 transactions
 
     // app.port(18080).multithreaded().run();
     app.bindaddr("0.0.0.0").port(18080).multithreaded().run();

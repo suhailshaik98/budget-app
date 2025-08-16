@@ -12,7 +12,7 @@ function App() {
   return (
     <Router> {/* <-- must be at the root */}
       <Routes>
-        <Route path="/home" element={<HomePageLayout />} /> {/* Added HomePageLayout route */}
+        <Route path="/" element={<HomePageLayout />} /> {/* Added HomePageLayout route */}
         {/* <Route path="/" element={<Home />} /> */}
 
         <Route path="setup" element={<SetupLayout />}>
